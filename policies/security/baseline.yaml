@@ -1,0 +1,56 @@
+name: Security-Baseline-V1
+version: 1.0.0
+description: Core security hardening requirements for infrastructure devices.
+author: NetSentry Security Operations
+
+rules:
+  - id: SEC-SSH-V2-ONLY
+    description: "Ensure only SSH v2 is permitted for management access."
+    severity: CRITICAL
+    enabled: true
+    match:
+      contains: "ip ssh version 2"
+    action:
+      deny: true
+      remediation: "Execute 'ip ssh version 2' in global configuration mode."
+
+  - id: SEC-DISABLE-TELNET
+    description: "Ensure Telnet is explicitly denied on virtual terminal lines."
+    severity: CRITICAL
+    enabled: true
+    match:
+      not_contains: "transport input telnet"
+      not_contains: "transport input all"
+    action:
+      deny: true
+      remediation: "Configure 'transport input ssh' under 'line vty' configurations."
+
+  - id: SEC-EXEC-TIMEOUT
+    description: "Enforce VTY execution timeout."
+    severity: HIGH
+    enabled: true
+    match:
+      regex: "exec-timeout\\s+[1-9]"
+    action:
+      deny: true
+      remediation: "Configure absolute integer timeouts targeting terminal executions (e.g., 'exec-timeout 5 0')."
+
+  - id: SEC-SNMP-V3-ONLY
+    description: "Prohibit plaintext SNMP v1/v2c configurations."
+    severity: CRITICAL
+    enabled: true
+    match:
+      not_contains: "snmp-server community"
+    action:
+      deny: true
+      remediation: "Remove plaintext communities; provision 'snmp-server group ... v3 priv'."
+
+  - id: SEC-PASSWORD-ENCRYPTION
+    description: "Require password encryption service."
+    severity: HIGH
+    enabled: true
+    match:
+      contains: "service password-encryption"
+    action:
+      warn: true
+      remediation: "Enable 'service password-encryption' to obfuscate type-7 plaintext boundaries."

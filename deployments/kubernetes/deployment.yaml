@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netsentry-engine
+  namespace: netsentry-system
+  labels:
+    app.kubernetes.io/name: netsentry
+    app.kubernetes.io/instance: netsentry-engine
+    app.kubernetes.io/component: validator
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: netsentry
+      app.kubernetes.io/instance: netsentry-engine
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: netsentry
+        app.kubernetes.io/instance: netsentry-engine
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: netsentry
+          image: netsentry/engine:v1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http-api
+              containerPort: 8080
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http-api
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http-api
+            initialDelaySeconds: 2
+            periodSeconds: 5
+            failureThreshold: 2
+          env:
+            - name: NETSENTRY_LOG_LEVEL
+              value: "info"
+            - name: NETSENTRY_LOG_JSON
+              value: "true"

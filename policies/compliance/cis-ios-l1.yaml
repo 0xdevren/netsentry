@@ -1,0 +1,35 @@
+name: Compliance-CIS-IOS-L1
+version: 1.0.0
+description: Enforces Center for Internet Security (CIS) Level 1 constraints.
+author: NetSentry Compliance Bureau
+
+rules:
+  - id: CIS-1-1-ENABLE-SECRET
+    description: "Ensure 'enable secret' is configured."
+    severity: CRITICAL
+    enabled: true
+    match:
+      regex: "^enable secret (5|8|9) "
+    action:
+      deny: true
+      remediation: "Configure 'enable secret' avoiding plaintext or weak hash logic."
+
+  - id: CIS-1-2-NO-TCP-SMALL-SERVERS
+    description: "Disable tcp-small-servers."
+    severity: MEDIUM
+    enabled: true
+    match:
+      not_contains: "service tcp-small-servers"
+    action:
+      deny: true
+      remediation: "Ensure legacy TCP diagnostic servers operate offline natively."
+
+  - id: CIS-1-3-NO-HTTP-SERVER
+    description: "Disable plaintext HTTP server."
+    severity: HIGH
+    enabled: true
+    match:
+      not_contains: "ip http server"
+    action:
+      deny: true
+      remediation: "Execute 'no ip http server' restricting unencrypted management sessions."

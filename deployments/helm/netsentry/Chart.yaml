@@ -1,0 +1,15 @@
+apiVersion: v2
+name: netsentry
+description: An enterprise-grade network configuration validation engine.
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - compliance
+  - network
+  - validation
+  - policy
+  - auditing
+maintainers:
+  - name: NetSentry Engineering
+    email: engineering@netsentry.io

@@ -1,0 +1,35 @@
+name: Routing-Integrity-V1
+version: 1.0.0
+description: Validates logical routing boundaries confirming operational stability.
+author: NetSentry Network Engineering
+
+rules:
+  - id: ROUTE-BGP-MAX-PREFIX
+    description: "Enforce maximum prefix limits protecting dynamic memory matrices."
+    severity: CRITICAL
+    enabled: true
+    match:
+      regex: "neighbor\\s+.*\\s+maximum-routes\\s+\\d+"
+    action:
+      deny: true
+      remediation: "Configure explicit 'maximum-routes' bounding peer limits avoiding memory exhaustion vectors."
+
+  - id: ROUTE-OSPF-PASSIVE-DEFAULT
+    description: "Enforce OSPF passive-interface default preventing unintended adjacency."
+    severity: HIGH
+    enabled: true
+    match:
+      contains: "passive-interface default"
+    action:
+      deny: true
+      remediation: "Enable 'passive-interface default' within the OSPF routing block, selectively enabling active interfaces."
+
+  - id: ROUTE-NO-PROXY-ARP
+    description: "Disable Proxy ARP on routing interfaces."
+    severity: MEDIUM
+    enabled: true
+    match:
+      not_contains: "ip proxy-arp"
+    action:
+      warn: true
+      remediation: "Execute 'no ip proxy-arp' preventing arbitrary traffic redirection vectors."

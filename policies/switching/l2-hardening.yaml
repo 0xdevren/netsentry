@@ -1,0 +1,35 @@
+name: Layer2-Switching-V1
+version: 1.0.0
+description: Validates access-layer segmentation and loop prevention.
+author: NetSentry Network Engineering
+
+rules:
+  - id: SW-MSTP-ENABLE
+    description: "Ensure Multiple Spanning Tree Protocol operates preventing cyclical loops."
+    severity: CRITICAL
+    enabled: true
+    match:
+      contains: "spanning-tree mode mstp"
+    action:
+      deny: true
+      remediation: "Execute 'spanning-tree mode mstp' globally mapping deterministic forwarding."
+
+  - id: SW-BPDU-GUARD
+    description: "Require BPDU Guard explicitly on access edge ports."
+    severity: HIGH
+    enabled: true
+    match:
+      regex: "spanning-tree bpduguard enable"
+    action:
+      warn: true
+      remediation: "Assign BPDU guard boundaries isolating anomalous switch connections."
+
+  - id: SW-TRUNK-NONEGOTIATE
+    description: "Disable Dynamic Trunking Protocol (DTP) mitigating VLAN hopping."
+    severity: HIGH
+    enabled: true
+    match:
+      contains: "switchport nonegotiate"
+    action:
+      deny: true
+      remediation: "Configure absolute integer timeouts targeting terminal executions (e.g., 'switchport nonegotiate')."

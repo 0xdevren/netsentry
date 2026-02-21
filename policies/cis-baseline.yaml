@@ -1,0 +1,95 @@
+name: CIS-Baseline
+version: "1.0"
+description: CIS-inspired network device security baseline policy for Cisco IOS/NX-OS.
+author: NetSentry Security Team
+
+rules:
+  - id: SNMP-001
+    description: SNMP must not use the default 'public' community string
+    severity: HIGH
+    match:
+      contains: "snmp-server community public"
+    action:
+      deny: true
+      remediation: "Remove the 'public' SNMP community and replace with a unique, strong community string."
+
+  - id: SNMP-002
+    description: SNMP must not use the default 'private' community string
+    severity: HIGH
+    match:
+      contains: "snmp-server community private"
+    action:
+      deny: true
+      remediation: "Remove the 'private' SNMP community and replace with a unique, strong community string."
+
+  - id: NTP-001
+    description: NTP must be configured
+    severity: MEDIUM
+    match:
+      required_block: "ntp server"
+    action:
+      deny: true
+      remediation: "Configure at least one NTP server: 'ntp server <ip>'."
+
+  - id: SSH-001
+    description: SSH version 2 must be enforced
+    severity: HIGH
+    match:
+      required_block: "ip ssh version 2"
+    action:
+      deny: true
+      remediation: "Add 'ip ssh version 2' to enforce SSHv2 only."
+
+  - id: TELNET-001
+    description: Telnet access must be disabled on VTY lines
+    severity: CRITICAL
+    match:
+      contains: "transport input telnet"
+    action:
+      deny: true
+      remediation: "Change VTY transport to 'transport input ssh' or 'transport input none'."
+
+  - id: LOG-001
+    description: Logging must be configured
+    severity: MEDIUM
+    match:
+      required_block: "logging"
+    action:
+      deny: true
+      remediation: "Configure a syslog server: 'logging host <ip>'."
+
+  - id: ACL-001
+    description: Access lists must be defined
+    severity: LOW
+    match:
+      required_block: "ip access-list"
+    action:
+      warn: true
+      remediation: "Define and apply access control lists to restrict management access."
+
+  - id: ENABLE-001
+    description: Enable secret must be configured (not enable password)
+    severity: HIGH
+    match:
+      contains: "enable password"
+    action:
+      deny: true
+      remediation: "Replace 'enable password' with 'enable secret' to use MD5 hashing."
+
+  - id: CDP-001
+    description: CDP should be disabled on external interfaces
+    severity: LOW
+    match:
+      contains: "cdp run"
+    action:
+      warn: true
+      remediation: "Disable CDP globally ('no cdp run') or per-interface ('no cdp enable') on external-facing interfaces."
+
+  - id: BANNER-001
+    description: Login banner must be configured
+    severity: LOW
+    match:
+      required_block: "banner"
+    action:
+      warn: true
+      remediation: "Configure a legal warning banner: 'banner motd'."

@@ -1,0 +1,31 @@
+name: Integration-Test-Policy
+version: 1.0.0
+description: Validates baseline requirements for integration testing.
+
+rules:
+  - id: ROUTE-OSPF-PASSIVE-DEFAULT
+    description: "Enforce OSPF passive-interface default."
+    severity: HIGH
+    enabled: true
+    match:
+      contains: "router ospf 1"
+    action:
+      deny: false
+
+  - id: SEC-SSH-V2-ONLY
+    description: "Ensure only SSH v2 is permitted for management access."
+    severity: CRITICAL
+    enabled: true
+    match:
+      contains: "ip ssh version 2"
+    action:
+      deny: false
+
+  - id: SEC-SNMP-V3-ONLY
+    description: "Prohibit plaintext SNMP v1/v2c configurations."
+    severity: CRITICAL
+    enabled: true
+    match:
+      not_contains: "snmp-server community public ro"
+    action:
+      warn: true

@@ -1,0 +1,85 @@
+name: Advanced CI Pipeline
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  lint-and-sec:
+    name: Code Quality & Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Verify Dependencies
+        run: go mod verify
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+          args: --timeout=5m
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Run govulncheck
+        run: govulncheck ./...
+
+  test-and-build:
+    name: Build & Test Matrix
+    needs: lint-and-sec
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        arch: [amd64, arm64]
+        exclude:
+          - os: windows-latest
+            arch: arm64
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Build Binary
+        env:
+          GOOS: ${{ matrix.os == 'ubuntu-latest' && 'linux' || matrix.os == 'macos-latest' && 'darwin' || 'windows' }}
+          GOARCH: ${{ matrix.arch }}
+          CGO_ENABLED: 0
+        run: go build -trimpath -ldflags="-s -w" -v ./...
+
+      - name: Run Tests (Linux/macOS)
+        if: runner.os != 'Windows'
+        env:
+          GOOS: ${{ matrix.os == 'ubuntu-latest' && 'linux' || matrix.os == 'macos-latest' && 'darwin' || 'windows' }}
+          GOARCH: ${{ matrix.arch }}
+        run: go test -v -race -coverprofile=coverage.out ./...
+
+      - name: Run Tests (Windows)
+        if: runner.os == 'Windows'
+        env:
+          GOOS: windows
+          GOARCH: ${{ matrix.arch }}
+        run: go test -v -coverprofile=coverage.out ./...
