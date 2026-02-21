@@ -1,6 +1,6 @@
 module github.com/0xdevren/netsentry
 
-go 1.24.0
+go 1.24.13
 
 require (
 	github.com/fatih/color v1.16.0
