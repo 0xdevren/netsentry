@@ -64,11 +64,21 @@ jobs:
           cache: true
 
       - name: Build Binary
+        shell: bash
         env:
           GOOS: ${{ matrix.os == 'ubuntu-latest' && 'linux' || matrix.os == 'macos-latest' && 'darwin' || 'windows' }}
           GOARCH: ${{ matrix.arch }}
           CGO_ENABLED: 0
-        run: go build -trimpath -ldflags="-s -w" -v ./...
+        run: |
+          EXT=""
+          if [ "${{ runner.os }}" == "Windows" ]; then EXT=".exe"; fi
+          go build -trimpath -ldflags="-s -w" -o netsentry-${{ matrix.os }}-${{ matrix.arch }}$EXT -v ./cmd/netsentry
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: netsentry-${{ matrix.os }}-${{ matrix.arch }}
+          path: netsentry-${{ matrix.os }}-${{ matrix.arch }}*
 
       - name: Run Tests (Linux/macOS)
         if: runner.os != 'Windows'
