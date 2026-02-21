@@ -51,10 +51,6 @@ func (r *YAMLReporter) Generate(report *policy.Report) error {
 	return err
 }
 
-// marshalYAML is used by the YAML reporter helper (stub kept for any future use).
-func marshalYAML(v interface{}) ([]byte, error) {
-	return yaml.Marshal(v)
-}
 
 // resolveWriter returns the appropriate io.Writer from Options.
 func resolveWriter(opts Options) io.Writer {

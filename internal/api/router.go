@@ -66,5 +66,3 @@ func JSONContentType(next http.Handler) http.Handler {
 	})
 }
 
-// serverTimeout is the default request timeout for API operations.
-const serverTimeout = 60 * time.Second
