@@ -1,5 +1,7 @@
 package model
 
+import "strings"
+
 // ConfigModel is the canonical, vendor-neutral structured representation
 // of a parsed network device configuration. It is the primary input to
 // the validation pipeline.
@@ -40,24 +42,7 @@ func (c *ConfigModel) HasLine(line string) bool {
 // ContainsText reports whether any line in the configuration contains the given substring.
 func (c *ConfigModel) ContainsText(text string) bool {
 	for _, l := range c.Lines {
-		if contains(l, text) {
-			return true
-		}
-	}
-	return false
-}
-
-// contains is an inlined string containment check to avoid importing strings
-// in the hot validation path.
-func contains(s, substr string) bool {
-	if len(substr) == 0 {
-		return true
-	}
-	if len(s) < len(substr) {
-		return false
-	}
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
+		if strings.Contains(l, text) {
 			return true
 		}
 	}

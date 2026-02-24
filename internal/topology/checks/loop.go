@@ -10,14 +10,15 @@ type LoopCheck struct{}
 
 // Run detects directed cycles in the topology.
 func (c *LoopCheck) Run(g *model.TopologyGraph) []Issue {
-	// Build adjacency list.
-	adj := make(map[string][]string)
+	// Build adjacency list with pre-allocated capacity.
+	nDevices := len(g.Devices)
+	adj := make(map[string][]string, nDevices)
 	for _, link := range g.Links {
 		adj[link.SourceDevice] = append(adj[link.SourceDevice], link.TargetDevice)
 	}
 
-	visited := make(map[string]int) // 0=unvisited, 1=in-stack, 2=done
-	var issues []Issue
+	visited := make(map[string]int, nDevices) // 0=unvisited, 1=in-stack, 2=done
+	issues := make([]Issue, 0, 4)             // Pre-allocate for typical case
 
 	var dfs func(node string, path []string)
 	dfs = func(node string, path []string) {
@@ -55,8 +56,9 @@ type SubnetOverlapCheck struct{}
 func (s *SubnetOverlapCheck) Run(g *model.TopologyGraph) []Issue {
 	// Placeholder: full CIDR overlap check requires interface-level data.
 	// At topology graph level, we flag devices with identical /24 management prefixes.
-	prefixMap := make(map[string]string)
-	var issues []Issue
+	nDevices := len(g.Devices)
+	prefixMap := make(map[string]string, nDevices)
+	issues := make([]Issue, 0, 2) // Pre-allocate for typical case
 
 	for id, dev := range g.Devices {
 		ip := dev.ManagementIP

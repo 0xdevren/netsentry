@@ -1,6 +1,7 @@
 package cisco
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"strconv"
@@ -390,7 +391,9 @@ func (p *IOSParser) parseVLAN(text string) model.VLAN {
 
 // splitLines splits raw config bytes on newlines and returns trimmed non-empty lines.
 func splitLines(data []byte) []string {
-	var lines []string
+	// Count lines first to pre-allocate slice capacity.
+	lineCount := bytes.Count(data, []byte("\n")) + 1
+	lines := make([]string, 0, lineCount)
 	for _, line := range strings.Split(string(data), "\n") {
 		trimmed := strings.TrimRight(line, "\r")
 		if trimmed != "" {

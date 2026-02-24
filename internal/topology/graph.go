@@ -49,8 +49,8 @@ func (g *Graph) Links() []model.TopologyLink {
 
 // Neighbors returns device IDs directly connected to the given device.
 func (g *Graph) Neighbors(deviceID string) []string {
-	var neighbors []string
-	seen := make(map[string]struct{})
+	neighbors := make([]string, 0, 4) // Pre-allocate for typical case
+	seen := make(map[string]struct{}, 4)
 	for _, e := range g.edges {
 		if e.SourceDevice == deviceID {
 			if _, ok := seen[e.TargetDevice]; !ok {

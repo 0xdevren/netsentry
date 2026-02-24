@@ -40,7 +40,9 @@ func NewLexer() *Lexer { return &Lexer{} }
 
 // Tokenise scans data line by line and returns the token stream.
 func (l *Lexer) Tokenise(data []byte) []Token {
-	var tokens []Token
+	// Pre-estimate token count based on line count.
+	lineCount := bytes.Count(data, []byte("\n")) + 1
+	tokens := make([]Token, 0, lineCount)
 	scanner := bufio.NewScanner(bytes.NewReader(data))
 	prevDepth := 0
 

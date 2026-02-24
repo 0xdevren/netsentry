@@ -14,8 +14,9 @@ func (c *DuplicateIPCheck) Run(g *model.TopologyGraph) []Issue {
 	// operates on the topology graph level and reports any duplicate IPs.
 	// Since the TopologyGraph does not embed ConfigModels, this check is a
 	// structural placeholder that validates the device management IPs.
-	seen := make(map[string]string) // ip -> deviceID
-	var issues []Issue
+	nDevices := len(g.Devices)
+	seen := make(map[string]string, nDevices) // ip -> deviceID
+	issues := make([]Issue, 0, 2)             // Pre-allocate for typical case
 
 	for id, dev := range g.Devices {
 		ip := dev.ManagementIP

@@ -147,6 +147,10 @@ type ReportSummary struct {
 // ComputeSummary calculates aggregate statistics from a slice of results.
 func ComputeSummary(results []ValidationResult) ReportSummary {
 	s := ReportSummary{Total: len(results)}
+	if len(results) == 0 {
+		return s
+	}
+	// Pre-count for single-pass aggregation.
 	for _, r := range results {
 		switch r.Status {
 		case StatusPass:

@@ -48,23 +48,20 @@ func (e *Engine) Run(ctx context.Context, p *Policy, cfg *model.ConfigModel) ([]
 		return nil, fmt.Errorf("engine: nil config model")
 	}
 
-	jobs := make(chan job, len(p.Rules))
-	results := make(chan ValidationResult, len(p.Rules))
+	nRules := len(p.Rules)
+	jobs := make(chan job, nRules)
+	results := make(chan ValidationResult, nRules)
 
 	var wg sync.WaitGroup
 	for i := 0; i < e.opts.Concurrency; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for {
+			for j := range jobs {
 				select {
 				case <-ctx.Done():
 					return
-				case j, ok := <-jobs:
-					if !ok {
-						return
-					}
-					results <- e.evaluator.Evaluate(j.rule, j.cfg)
+				case results <- e.evaluator.Evaluate(j.rule, j.cfg):
 				}
 			}
 		}()
@@ -89,7 +86,7 @@ func (e *Engine) Run(ctx context.Context, p *Policy, cfg *model.ConfigModel) ([]
 		close(results)
 	}()
 
-	var out []ValidationResult
+	out := make([]ValidationResult, 0, nRules)
 	for r := range results {
 		out = append(out, r)
 	}

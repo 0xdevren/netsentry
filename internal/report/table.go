@@ -1,6 +1,7 @@
 package report
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -26,17 +27,21 @@ func NewTableReporter(opts Options) *TableReporter {
 func (r *TableReporter) Generate(report *policy.Report) error {
 	w := r.writer
 
+	// Use buffered writer for better I/O performance.
+	buf := bufio.NewWriter(w)
+	defer buf.Flush()
+
 	// Header.
-	fmt.Fprintf(w, "\nDEVICE : %s\n", report.Device.String())
-	fmt.Fprintf(w, "POLICY : %s", report.Policy)
+	fmt.Fprintf(buf, "\nDEVICE : %s\n", report.Device.String())
+	fmt.Fprintf(buf, "POLICY : %s", report.Policy)
 	if report.PolicyVersion != "" {
-		fmt.Fprintf(w, " (v%s)", report.PolicyVersion)
+		fmt.Fprintf(buf, " (v%s)", report.PolicyVersion)
 	}
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, strings.Repeat("-", 72))
+	fmt.Fprintln(buf)
+	fmt.Fprintln(buf, strings.Repeat("-", 72))
 
 	// Table.
-	table := tablewriter.NewWriter(w)
+	table := tablewriter.NewWriter(buf)
 	table.SetHeader([]string{"RULE-ID", "STATUS", "SEVERITY", "MESSAGE"})
 	table.SetBorder(false)
 	table.SetHeaderLine(true)
@@ -58,15 +63,15 @@ func (r *TableReporter) Generate(report *policy.Report) error {
 	table.Render()
 
 	// Summary.
-	fmt.Fprintln(w, strings.Repeat("-", 72))
-	fmt.Fprintln(w, "SUMMARY:")
+	fmt.Fprintln(buf, strings.Repeat("-", 72))
+	fmt.Fprintln(buf, "SUMMARY:")
 	s := report.Summary
-	fmt.Fprintf(w, "  Passed   : %d\n", s.Passed)
-	fmt.Fprintf(w, "  Failed   : %d\n", s.Failed)
-	fmt.Fprintf(w, "  Warnings : %d\n", s.Warnings)
-	fmt.Fprintf(w, "  Skipped  : %d\n", s.Skipped)
-	fmt.Fprintf(w, "  Score    : %.0f%%\n", s.Score)
-	fmt.Fprintln(w)
+	fmt.Fprintf(buf, "  Passed   : %d\n", s.Passed)
+	fmt.Fprintf(buf, "  Failed   : %d\n", s.Failed)
+	fmt.Fprintf(buf, "  Warnings : %d\n", s.Warnings)
+	fmt.Fprintf(buf, "  Skipped  : %d\n", s.Skipped)
+	fmt.Fprintf(buf, "  Score    : %.0f%%\n", s.Score)
+	fmt.Fprintln(buf)
 
 	return nil
 }

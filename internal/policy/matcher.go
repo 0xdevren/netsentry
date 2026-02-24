@@ -3,6 +3,7 @@ package policy
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/0xdevren/netsentry/internal/model"
 )
@@ -38,7 +39,7 @@ func (m *Matcher) Match(spec MatchSpec, cfg *model.ConfigModel) (bool, error) {
 // matchContains returns true if any configuration line contains the substring.
 func (m *Matcher) matchContains(text string, cfg *model.ConfigModel) bool {
 	for _, line := range cfg.Lines {
-		if containsStr(line, text) {
+		if strings.Contains(line, text) {
 			return true
 		}
 	}
@@ -48,7 +49,7 @@ func (m *Matcher) matchContains(text string, cfg *model.ConfigModel) bool {
 // matchNotContains returns true if no configuration line contains the substring.
 func (m *Matcher) matchNotContains(text string, cfg *model.ConfigModel) bool {
 	for _, line := range cfg.Lines {
-		if containsStr(line, text) {
+		if strings.Contains(line, text) {
 			return false
 		}
 	}
@@ -90,20 +91,4 @@ func (m *Matcher) compileRegex(pattern string) (*regexp.Regexp, error) {
 	}
 	m.cache[pattern] = re
 	return re, nil
-}
-
-// containsStr is an allocation-free substring search.
-func containsStr(s, sub string) bool {
-	if len(sub) == 0 {
-		return true
-	}
-	if len(s) < len(sub) {
-		return false
-	}
-	for i := 0; i <= len(s)-len(sub); i++ {
-		if s[i:i+len(sub)] == sub {
-			return true
-		}
-	}
-	return false
 }

@@ -24,6 +24,10 @@ func NewWorkerPool[J any, R any](concurrency int, worker func(ctx context.Contex
 // Run submits all jobs to the pool and returns the collected results. The
 // function blocks until all workers complete or the context is cancelled.
 func (p *WorkerPool[J, R]) Run(ctx context.Context, jobs []J) []R {
+	if len(jobs) == 0 {
+		return nil
+	}
+
 	jobCh := make(chan J, len(jobs))
 	resultCh := make(chan R, len(jobs))
 
@@ -32,15 +36,11 @@ func (p *WorkerPool[J, R]) Run(ctx context.Context, jobs []J) []R {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for {
+			for j := range jobCh {
 				select {
 				case <-ctx.Done():
 					return
-				case j, ok := <-jobCh:
-					if !ok {
-						return
-					}
-					resultCh <- p.worker(ctx, j)
+				case resultCh <- p.worker(ctx, j):
 				}
 			}
 		}()
@@ -60,7 +60,7 @@ func (p *WorkerPool[J, R]) Run(ctx context.Context, jobs []J) []R {
 		close(resultCh)
 	}()
 
-	var results []R
+	results := make([]R, 0, len(jobs))
 	for r := range resultCh {
 		results = append(results, r)
 	}
